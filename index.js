@@ -35,6 +35,49 @@ app.post('/agents', async (req,res) => {
     }
 })
 
+async function getAllSalesAgent(){
+    try {
+        const agent = await SalesAgent.find()
+        console.log(agent)
+        return agent
+    } catch (error) {
+        throw error
+    }
+}
+
+app.get('/agents', async (req,res) => {
+    try {
+        const agent = await getAllSalesAgent()
+        res.status(201).json({message: 'All Sales Data is this', data: agent})
+    } catch (error) {
+        res.status(500).json({error: 'Failed to fetch Sales Data'})
+    }
+})
+
+async function createALead(newLead){
+    try {
+        const lead = new Lead(newLead)
+        const savedLead = await lead.save()
+        return savedLead
+    } catch (error) {
+        throw error
+    }
+}
+
+app.post('/leads', async (req, res) => {
+    try {
+        const lead = await createALead(req.body)
+        if(lead){
+            res.status(201).json({message: 'Lead successfully loaded', data: lead})
+        }else{
+            res.status(404).json({error: 'Something went wrong in this lead'})
+        }
+    } catch (error) {
+        res.status(500).json({error: 'Failed to fetch lead Data'})
+        console.error(error.message)
+    }
+}) 
+
 const PORT = 3001
 app.listen(PORT, () => {
     console.log('Server is running on 3001')
