@@ -143,10 +143,10 @@ async function deletedLeadByLeadId(leadId) {
 app.delete("/leads/:leadId", async (req, res) => {
   try {
     const lead = await deletedLeadByLeadId(req.params.leadId);
-    if (lead.length > 0) {
+    if (lead) {
       res.status(201).json({ message: "Lead deleted successfully" });
     } else {
-      res.status(404).json({ error: "Lead with Id not found" });
+      res.status(404).json({ error: "Lead Id not found" });
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch lead Details" });
