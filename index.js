@@ -6,7 +6,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const Lead = require("./models/lead.model.js");
 const SalesAgent = require("./models/salesAgent.model.js");
-const comment = require("./models/comment.model.js");
+const Comment = require("./models/comment.model.js");
 const Tags = require("./models/tag.model.js");
 
 const { initializeDatabase } = require("./db/db.connect.js");
@@ -152,6 +152,54 @@ app.delete("/leads/:leadId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch lead Details" });
   }
 });
+
+async function createNewCommentsToLead(leadId, newComment){
+  try {
+    const lead = await Lead.findByIdAndUpdate(leadId)
+      const comment = new Comment(newComment)
+      const savedComment = await comment.save()
+      return savedComment
+  } catch (error) {
+    throw error
+  }
+}
+
+app.post('/leads/:leadId/comments', async (req,res) => {
+  try {
+    const comment = await createNewCommentsToLead(req.params.leadId, req.body)
+    if(comment){
+      res.status(201).json({message: 'New Comment Added successfully', data: comment})
+    }else{
+      res.status(404).json({error: 'Something wrong in this comment'})
+      console.error(error.message)
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch comment Details" });
+  }
+})
+
+async function getAllCommentForLead(){
+  try {
+    const comment = await Comment.find().populate('lead').populate('author')
+    return comment
+  } catch (error) {
+    throw error
+  }
+}
+ 
+app.get('/leads/comment', async (req,res) => {
+  try {
+    const comment = await getAllCommentForLead()
+    if(comment){
+      res.status(201).json({message: 'All comments this', data: comment})
+    }else{
+      res.status(404).json({error: 'Something wrong in this comment'})
+    }
+  } catch (error) {
+    res.status(500).json({error: 'Failed to fetch comment Details'})
+    console.error(error.message)
+  }
+})
 
 const PORT = 3001;
 app.listen(PORT, () => {

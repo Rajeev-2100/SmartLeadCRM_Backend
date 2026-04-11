@@ -36,6 +36,10 @@ const leadSchema = new mongoose.Schema({
     enum: ['High', 'Medium', 'Low'],  // Predefined priority levels
     default: 'Medium',
   },
+  commentText: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -50,3 +54,4 @@ const leadSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Lead', leadSchema);
+  
