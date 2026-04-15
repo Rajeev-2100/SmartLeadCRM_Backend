@@ -215,7 +215,7 @@ async function getReportClosedAtLastWeek(){
     .populate('salesAgent')
     .select('name salesAgent closedAt')
 
-    console.log('Lead: ', lead)
+    // console.log('Lead: ', lead)
 
     return lead
   } catch (error) {
@@ -230,6 +230,33 @@ app.get('/report/last-week', async (req,res) => {
   } catch (error) {
         res.status(500).json({error: 'Failed to fetch report Details'})
         console.error(error.message)
+  }
+})
+
+async function getTotalLeadsInPipeline(){
+  try {
+    const count = await Lead.countDocuments({
+      status: { $ne: 'Closed'}
+    })
+    return count
+  } catch (error) {
+    throw error
+  }
+}
+
+app.get('/report/pipeline', async (req,res) => {
+  try {
+    const total = await getTotalLeadsInPipeline()
+    console.log('total: ',total);
+
+    if(total){
+      res.status(201).json({totalLeadsInPipeline: total})
+    }else{
+      re.status(404).json({error: 'Something wrong in pipeline data'})
+      console.error(error.message)
+    }
+  } catch (error) {
+    res.status(500).json({error: 'Failed to fetch report data'})
   }
 })
 
