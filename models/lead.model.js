@@ -36,10 +36,6 @@ const leadSchema = new mongoose.Schema({
     enum: ['High', 'Medium', 'Low'],  // Predefined priority levels
     default: 'Medium',
   },
-  commentText: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment',
-  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -52,6 +48,13 @@ const leadSchema = new mongoose.Schema({
     type: Date,  // The date when the lead was closed (optional, used when status is "Closed")
   },
 });
+
+leadSchema.pre('save', function () {  // remove the next parameter 
+  if (this.status === 'Closed' && !this.closedAt) {
+    this.closedAt = new Date();
+  }
+  // next(); // and hide the next call because the that undefined function
+}); 
 
 module.exports = mongoose.model('Lead', leadSchema);
   

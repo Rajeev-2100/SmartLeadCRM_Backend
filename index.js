@@ -77,7 +77,7 @@ app.post("/leads", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch lead Data" });
-    // console.error(error.message);
+    console.error(error.message);
   }
 });
 
@@ -198,6 +198,38 @@ app.get('/leads/comment', async (req,res) => {
   } catch (error) {
     res.status(500).json({error: 'Failed to fetch comment Details'})
     console.error(error.message)
+  }
+})
+
+async function getReportClosedAtLastWeek(){
+  try {
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const lead = await Lead.find({
+      status: "Closed",
+      closedAt: {
+        $gte: sevenDaysAgo
+      }
+    })
+    .populate('salesAgent')
+    .select('name salesAgent closedAt')
+
+    console.log('Lead: ', lead)
+
+    return lead
+  } catch (error) {
+    throw error
+  }
+}
+
+app.get('/report/last-week', async (req,res) => {
+  try {
+    const report = await getReportClosedAtLastWeek()
+    res.status(201).json({message: 'Last week data is this: ', data: report})
+  } catch (error) {
+        res.status(500).json({error: 'Failed to fetch report Details'})
+        console.error(error.message)
   }
 })
 
