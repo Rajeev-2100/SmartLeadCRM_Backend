@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
+const cors = require('cors')
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors())
+
 
 const Lead = require("./models/lead.model.js");
 const SalesAgent = require("./models/salesAgent.model.js");
