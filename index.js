@@ -107,6 +107,28 @@ app.get("/leads", async (req, res) => {
   }
 });
 
+async function getLeadsDataByLeadStatus(leadStatus){
+  try {
+    const lead = await Lead.findOne({status: leadStatus})
+    return lead
+  } catch (error) {
+    throw error
+  }
+}
+
+app.get('/leads/:leadStatus', async (req,res) => {
+  try {
+    const lead = await getLeadsDataByLeadStatus(req.params.leadStatus)
+    if(lead){
+      res.status(200).json({message: 'Lead Status is this: ', data: lead})
+    }else{
+      res.status(404).json({error: 'This Lead Status not exist'})
+    }
+  } catch (error) {
+    res.status(500).json({error: 'Failed to fetch Lead Data'})
+  }
+})
+
 async function updatedLeadByLeadId(leadId, dataToUpdate) {
   try {
     const lead = await Lead.findByIdAndUpdate(leadId, dataToUpdate, {
