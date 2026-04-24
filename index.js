@@ -107,6 +107,35 @@ app.get("/leads", async (req, res) => {
   }
 });
 
+async function getLeadStatusCounts() {
+  try {
+    const result = await Lead.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
+
+app.get("/leads/status-count", async (req, res) => {
+  try {
+    const data = await getLeadStatusCounts();
+    if(data){
+       res.status(200).json({ message: "Lead status counts", data})
+    }else{
+      res.status(404).json({error: 'Lead Status not found'})
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch status counts" });
+  }
+});
+
 async function getLeadsDataByLeadStatus(leadStatus){
   try {
     const lead = await Lead.findOne({status: leadStatus})
@@ -287,4 +316,4 @@ app.get('/report/pipeline', async (req,res) => {
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log("Server is running on 3001");
-});
+})
