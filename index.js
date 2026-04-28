@@ -240,7 +240,7 @@ async function getAllCommentForLead(){
   }
 }
  
-app.get('/leads/comment', async (req,res) => {
+app.get('/leads/:leadId/comment', async (req,res) => {
   try {
     const comment = await getAllCommentForLead()
     if(comment){
