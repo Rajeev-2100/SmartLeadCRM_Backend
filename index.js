@@ -231,9 +231,9 @@ app.post('/leads/:leadId/comments', async (req,res) => {
   }
 })
 
-async function getAllCommentForLead(){
+async function getAllCommentForLead(leadId){
   try {
-    const comment = await Comment.find().populate('lead').populate('author')
+    const comment = await Comment.findById(leadId).populate('lead').populate('author')
     return comment
   } catch (error) {
     throw error
@@ -247,6 +247,7 @@ app.get('/leads/:leadId/comment', async (req,res) => {
       res.status(201).json({message: 'All comments this', data: comment})
     }else{
       res.status(404).json({error: 'Something wrong in this comment'})
+      console.error(error.message)
     }
   } catch (error) {
     res.status(500).json({error: 'Failed to fetch comment Details'})
