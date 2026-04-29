@@ -1,10 +1,9 @@
 const express = require("express");
 const app = express();
-const cors = require('cors')
+const cors = require("cors");
 
 app.use(express.json());
-app.use(cors())
-
+app.use(cors());
 
 const Lead = require("./models/lead.model.js");
 const SalesAgent = require("./models/salesAgent.model.js");
@@ -113,9 +112,9 @@ async function getLeadStatusCounts() {
       {
         $group: {
           _id: "$status",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
     return result;
   } catch (error) {
@@ -126,37 +125,37 @@ async function getLeadStatusCounts() {
 app.get("/leads/status-count", async (req, res) => {
   try {
     const data = await getLeadStatusCounts();
-    if(data){
-       res.status(200).json({ message: "Lead status counts", data})
-    }else{
-      res.status(404).json({error: 'Lead Status not found'})
+    if (data) {
+      res.status(200).json({ message: "Lead status counts", data });
+    } else {
+      res.status(404).json({ error: "Lead Status not found" });
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch status counts" });
   }
 });
 
-async function getLeadsDataByLeadStatus(leadStatus){
+async function getLeadsDataByLeadStatus(leadStatus) {
   try {
-    const lead = await Lead.findOne({status: leadStatus})
-    return lead
+    const lead = await Lead.findOne({ status: leadStatus });
+    return lead;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
-app.get('/leads/:leadStatus', async (req,res) => {
+app.get("/leads/:leadStatus", async (req, res) => {
   try {
-    const lead = await getLeadsDataByLeadStatus(req.params.leadStatus)
-    if(lead){
-      res.status(200).json({message: 'Lead Status is this: ', data: lead})
-    }else{
-      res.status(404).json({error: 'This Lead Status not exist'})
+    const lead = await getLeadsDataByLeadStatus(req.params.leadStatus);
+    if (lead) {
+      res.status(200).json({ message: "Lead Status is this: ", data: lead });
+    } else {
+      res.status(404).json({ error: "This Lead Status not exist" });
     }
   } catch (error) {
-    res.status(500).json({error: 'Failed to fetch Lead Data'})
+    res.status(500).json({ error: "Failed to fetch Lead Data" });
   }
-})
+});
 
 async function updatedLeadByLeadId(leadId, dataToUpdate) {
   try {
@@ -206,115 +205,118 @@ app.delete("/leads/:leadId", async (req, res) => {
   }
 });
 
-async function createNewCommentsToLead(leadId, newComment){
+async function createNewCommentsToLead(leadId, authorId, newComment) {
   try {
-    const lead = await Lead.findByIdAndUpdate(leadId)
-      const comment = new Comment(newComment)
-      const savedComment = await comment.save()
-      return savedComment
+    const comment = new Comment({
+      lead: leadId,
+      author: authorId,
+      commentText: newComment,
+    });
+    const savedComment = await comment.save();
+    return savedComment;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
-app.post('/leads/:leadId/comments', async (req,res) => {
+app.post("/leads/:id/comments", async (req, res) => {
   try {
-    const comment = await createNewCommentsToLead(req.params.leadId, req.body)
-    if(comment){
-      res.status(201).json({message: 'New Comment Added successfully', data: comment})
-    }else{
-      res.status(404).json({error: 'Something wrong in this comment'})
-      console.error(error.message)
+    const { commentText, author } = req.body;
+    const comment = await createNewCommentsToLead(req.params.id, author, commentText);
+    if (comment) {
+      res.status(201).json({ message: "New Comment Added successfully", data: comment });
+    } else {
+      res.status(404).json({ error: "Something wrong in this comment" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch comment Details" });
+  }
+});
+
+async function getAllCommentDetailByCommentId(leadId) {
+  try {
+    const comment = await Comment.find({lead: leadId})
+      .populate("lead")
+      .populate("author");
+    return comment;
+  } catch (error) {
+    throw error;
+  }
+}
+
+app.get("/leads/:leadId/comments", async (req, res) => {
+  try {
+    const comment = await getAllCommentDetailByCommentId(req.params.leadId);
+    if (comment) {
+      res.status(201).json({ message: "All comments this", data: comment });
+    } else {
+      res.status(404).json({ error: "Something wrong in this comment" });
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comment Details" });
   }
 })
 
-async function getAllCommentForLead(leadId){
+async function getReportClosedAtLastWeek() {
   try {
-    const comment = await Comment.findById(leadId).populate('lead').populate('author')
-    return comment
-  } catch (error) {
-    throw error
-  }
-}
- 
-app.get('/leads/:leadId/comment', async (req,res) => {
-  try {
-    const comment = await getAllCommentForLead()
-    if(comment){
-      res.status(201).json({message: 'All comments this', data: comment})
-    }else{
-      res.status(404).json({error: 'Something wrong in this comment'})
-      console.error(error.message)
-    }
-  } catch (error) {
-    res.status(500).json({error: 'Failed to fetch comment Details'})
-    console.error(error.message)
-  }
-})
-
-async function getReportClosedAtLastWeek(){
-  try {
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const lead = await Lead.find({
       status: "Closed",
       closedAt: {
-        $gte: sevenDaysAgo
-      }
+        $gte: sevenDaysAgo,
+      },
     })
-    .populate('salesAgent')
-    .select('name salesAgent closedAt')
+      .populate("salesAgent")
+      .select("name salesAgent closedAt");
 
     // console.log('Lead: ', lead)
 
-    return lead
+    return lead;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
-app.get('/report/last-week', async (req,res) => {
+app.get("/report/last-week", async (req, res) => {
   try {
-    const report = await getReportClosedAtLastWeek()
-    res.status(201).json({message: 'Last week data is this: ', data: report})
+    const report = await getReportClosedAtLastWeek();
+    res.status(201).json({ message: "Last week data is this: ", data: report });
   } catch (error) {
-        res.status(500).json({error: 'Failed to fetch report Details'})
-        console.error(error.message)
+    res.status(500).json({ error: "Failed to fetch report Details" });
+    console.error(error.message);
   }
-})
+});
 
-async function getTotalLeadsInPipeline(){
+async function getTotalLeadsInPipeline() {
   try {
     const count = await Lead.countDocuments({
-      status: { $ne: 'Closed'}
-    })
-    return count
+      status: { $ne: "Closed" },
+    });
+    return count;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
-app.get('/report/pipeline', async (req,res) => {
+app.get("/report/pipeline", async (req, res) => {
   try {
-    const total = await getTotalLeadsInPipeline()
-    console.log('total: ',total);
+    const total = await getTotalLeadsInPipeline();
+    console.log("total: ", total);
 
-    if(total){
-      res.status(201).json({totalLeadsInPipeline: total})
-    }else{
-      re.status(404).json({error: 'Something wrong in pipeline data'})
-      console.error(error.message)
+    if (total) {
+      res.status(201).json({ totalLeadsInPipeline: total });
+    } else {
+      re.status(404).json({ error: "Something wrong in pipeline data" });
+      console.error(error.message);
     }
   } catch (error) {
-    res.status(500).json({error: 'Failed to fetch report data'})
+    res.status(500).json({ error: "Failed to fetch report data" });
   }
-})
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log("Server is running on 3001");
-})
+});
