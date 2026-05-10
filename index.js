@@ -58,6 +58,28 @@ app.get("/agents", async (req, res) => {
   }
 });
 
+async function deletedSalesAgentByAgentName(salesPerson){
+  try {
+    const agent = await SalesAgent.findOneAndDelete({name: salesPerson})
+    return agent
+  } catch (error) {
+    throw error
+  }
+}
+
+app.delete('/agents/:salesPerson', async (req,res) => {
+  try {
+    const agent = await deletedSalesAgentByAgentName(req.params.salesPerson)
+    if(agent){
+      res.status(201).json({message: 'This Agent Details deleted successfully'})
+    }else{
+      res.status(404).json({error: 'Agent Detail not found'})
+    }
+  } catch (error) {
+    res.status(500).json({error: 'Failed to fetch Agent Details'})
+  }
+})
+
 async function createALead(newLead) {
   try {
     const lead = new Lead(newLead);
