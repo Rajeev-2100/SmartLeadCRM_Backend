@@ -1,9 +1,14 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
 
-app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
+app.use(express.json())
 
 const Lead = require("./models/lead.model.js");
 const SalesAgent = require("./models/salesAgent.model.js");
