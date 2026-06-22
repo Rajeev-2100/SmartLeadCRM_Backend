@@ -8,7 +8,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json())
+app.use(express.json());
 
 const Lead = require("./models/lead.model.js");
 const SalesAgent = require("./models/salesAgent.model.js");
@@ -63,27 +63,51 @@ app.get("/agents", async (req, res) => {
   }
 });
 
-async function deletedSalesAgentByAgentName(salesPerson){
+async function deletedSalesAgentByAgentName(salesPerson) {
   try {
-    const agent = await SalesAgent.findOneAndDelete({name: salesPerson})
-    return agent
+    const agent = await SalesAgent.findOneAndDelete({ name: salesPerson });
+    return agent;
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
-app.delete('/agents/:salesPerson', async (req,res) => {
+app.delete("/agents/:salesPerson", async (req, res) => {
   try {
-    const agent = await deletedSalesAgentByAgentName(req.params.salesPerson)
-    if(agent){
-      res.status(201).json({message: 'This Agent Details deleted successfully'})
-    }else{
-      res.status(404).json({error: 'Agent Detail not found'})
+    const agent = await deletedSalesAgentByAgentName(req.params.salesPerson);
+    if (agent) {
+      res
+        .status(201)
+        .json({ message: "This Agent Details deleted successfully" });
+    } else {
+      res.status(404).json({ error: "Agent Detail not found" });
     }
   } catch (error) {
-    res.status(500).json({error: 'Failed to fetch Agent Details'})
+    res.status(500).json({ error: "Failed to fetch Agent Details" });
   }
-})
+});
+
+async function seedLeadsData(seedData) {
+  try {
+    const leads = await Lead.insertMany(seedData);
+    return leads;
+  } catch (error) {
+    throw error;
+  }
+}
+
+app.post("/seed/leads", async (req, res) => {
+  try {
+    const leads = await seedLeadsData(req.body);
+    if (leads) {
+      res.status(201).json({ message: "All Leads Data added successfully" });
+    } else {
+      res.status(404).json({ error: "Something wrong in data" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch Lead Data" });
+  }
+});
 
 async function createALead(newLead) {
   try {
@@ -106,6 +130,28 @@ app.post("/leads", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch lead Data" });
     console.error(error.message);
+  }
+});
+
+async function getAllLeadByName() {
+  try {
+    const lead = await Lead.find({}, "name salesAgentId source");
+    return lead;
+  } catch (error) {
+    throw error;
+  }
+}
+
+app.get("/leads/specific", async (req, res) => {
+  try {
+    const lead = await getAllLeadByName();
+    if (lead) {
+      res.status(200).json({ message: "All Lead Data this", data: lead });
+    } else {
+      res.status(400).json({ error: "Something wrong is the Data" });
+    }
+  } catch (error) {
+    throw error;
   }
 });
 
@@ -249,9 +295,15 @@ async function createNewCommentsToLead(leadId, authorId, newComment) {
 app.post("/leads/:id/comments", async (req, res) => {
   try {
     const { commentText, author } = req.body;
-    const comment = await createNewCommentsToLead(req.params.id, author, commentText);
+    const comment = await createNewCommentsToLead(
+      req.params.id,
+      author,
+      commentText,
+    );
     if (comment) {
-      res.status(201).json({ message: "New Comment Added successfully", data: comment });
+      res
+        .status(201)
+        .json({ message: "New Comment Added successfully", data: comment });
     } else {
       res.status(404).json({ error: "Something wrong in this comment" });
     }
@@ -262,7 +314,7 @@ app.post("/leads/:id/comments", async (req, res) => {
 
 async function getAllCommentDetailByCommentId(leadId) {
   try {
-    const comment = await Comment.find({lead: leadId})
+    const comment = await Comment.find({ lead: leadId })
       .populate("lead")
       .populate("author");
     return comment;
@@ -282,7 +334,7 @@ app.get("/leads/:leadId/comments", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch comment Details" });
   }
-})
+});
 
 async function getReportClosedAtLastWeek() {
   try {
