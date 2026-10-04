@@ -1,40 +1,51 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Lead Schema
 const leadSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Lead name is required'],
+    required: [true, "Lead name is required"],
   },
   source: {
     type: String,
-    required: [true, 'Lead source is required'],
-    enum: ['Website', 'Referral', 'Cold Call', 'Advertisement', 'Email', 'Other'],  // Predefined lead sources
+    required: [true, "Lead source is required"],
+    enum: [
+      "Website",
+      "Referral",
+      "Cold Call",
+      "Advertisement",
+      "Email",
+      "Other",
+    ], // Predefined lead sources
   },
   salesAgent: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'SalesAgent',  // Reference to SalesAgent model
-    required: [true, 'Sales Agent is required'],
+    ref: "SalesAgent", // Reference to SalesAgent model
+    required: [true, "Sales Agent is required"],
   },
   status: {
     type: String,
     required: true,
-    enum: ['New', 'Contacted', 'Qualified', 'Proposal Sent', 'Closed'],  // Predefined lead statuses
-    default: 'New',
+    enum: ["New", "Contacted", "Qualified", "Proposal Sent", "Closed"], // Predefined lead statuses
+    default: "New",
   },
-  tags: {
-    type: [String],  // Array of strings for tags (e.g., High Value, Follow-up)
-  },
+  tags: [
+    {
+      type: mongoose.Schema.Types.ObjectId, // Array of strings for tags (e.g., High Value, Follow-up)
+      ref: "Tag",
+      required: true,
+    },
+  ],
   timeToClose: {
     type: Number,
-    required: [true, 'Time to Close is required'],
-    min: [1, 'Time to Close must be a positive number'],  // Positive integer validation
+    required: [true, "Time to Close is required"],
+    min: [1, "Time to Close must be a positive number"], // Positive integer validation
   },
   priority: {
     type: String,
     required: true,
-    enum: ['High', 'Medium', 'Low'],  // Predefined priority levels
-    default: 'Medium',
+    enum: ["High", "Medium", "Low"], // Predefined priority levels
+    default: "Medium",
   },
   createdAt: {
     type: Date,
@@ -45,16 +56,16 @@ const leadSchema = new mongoose.Schema({
     default: Date.now,
   },
   closedAt: {
-    type: Date,  // The date when the lead was closed (optional, used when status is "Closed")
+    type: Date, // The date when the lead was closed (optional, used when status is "Closed")
   },
 });
 
-leadSchema.pre('save', function () {  // remove the next parameter 
-  if (this.status === 'Closed' && !this.closedAt) {
+leadSchema.pre("save", function () {
+  // remove the next parameter
+  if (this.status === "Closed" && !this.closedAt) {
     this.closedAt = new Date();
   }
   // next(); // and hide the next call because the that undefined function
-}); 
+});
 
-module.exports = mongoose.model('Lead', leadSchema);
-  
+module.exports = mongoose.model("Lead", leadSchema);

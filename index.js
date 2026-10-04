@@ -2,9 +2,11 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 
-app.use(cors({
-  origin: "*",
-}));
+app.use(
+  cors({
+    origin: "*",
+  }),
+);
 
 app.use(express.json());
 
@@ -55,10 +57,10 @@ async function getAllSalesAgent() {
 app.get("/agents", async (req, res) => {
   try {
     const agents = await getAllSalesAgent();
-    if(agents){
+    if (agents) {
       res.status(201).json({ message: "All Sales Data is this", data: agents });
-    }else{
-      res.status(404).json({error: 'Something went wrong'})
+    } else {
+      res.status(404).json({ error: "Something went wrong" });
     }
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch Sales Data" });
@@ -159,14 +161,14 @@ app.get("/leads/specific", async (req, res) => {
 
 async function getAllLeadsData() {
   try {
-    const leads = await Lead.find().populate("salesAgent");
+    const leads = await Lead.find().populate("salesAgent").populate("tags");
     return leads;
   } catch (error) {
     throw error;
   }
 }
 
-app.get("/leads", async (req, res) => {
+app.get("/api/all-leads", async (req, res) => {
   try {
     const leads = await getAllLeadsData();
     if (leads) {
@@ -175,7 +177,7 @@ app.get("/leads", async (req, res) => {
       res.status(400).json({ error: "Something wrong is the Data" });
     }
   } catch (error) {
-    res.status(500).json({error: 'Failed to fetch Leads Data'})
+    res.status(500).json({ error: "Failed to fetch Leads Data" });
   }
 });
 
@@ -232,15 +234,13 @@ app.get("/leads/:leadStatus", async (req, res) => {
 
 async function updatedLeadByLeadId(leadId, dataToUpdate) {
   try {
-    const lead = await Lead.findByIdAndUpdate(leadId, dataToUpdate, {
-      new: true,
-    });
+    const lead = await Lead.findByIdAndUpdate(leadId, dataToUpdate, { returnDocument: "after" });
     return lead;
   } catch (error) {
     throw error;
   }
 }
-
+ 
 app.put("/leads/:leadId", async (req, res) => {
   try {
     const lead = await updatedLeadByLeadId(req.params.leadId, req.body);
@@ -396,7 +396,7 @@ app.get("/report/pipeline", async (req, res) => {
 
 // get All Tags
 
-async function getAllTagsData(){
+async function getAllTagsData() {
   try {
     const tags = await Tags.find();
     return tags;
@@ -405,8 +405,8 @@ async function getAllTagsData(){
   }
 }
 
-app.get('/tags', async (req,res) => {
-    try {
+app.get("/tags", async (req, res) => {
+  try {
     const tags = await getAllTagsData(req.params.leadId);
     if (tags) {
       res.status(201).json({ message: "All tags this", data: tags });
@@ -416,11 +416,11 @@ app.get('/tags', async (req,res) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch tag Details" });
   }
-})
+});
 
 // bulk Seeding Tags
 
-async function bulkSeedingTags(bulkData){
+async function bulkSeedingTags(bulkData) {
   try {
     const tags = await Tags.insertMany(bulkData);
     return tags;
@@ -429,18 +429,18 @@ async function bulkSeedingTags(bulkData){
   }
 }
 
-app.post('/api/bulk-tags', async (req, res) => {
+app.post("/api/bulk-tags", async (req, res) => {
   try {
     const tags = await bulkSeedingTags(req.body);
     if (tags && tags.length > 0) {
-      res.status(201).json({ message: 'Saved all tags', data: tags });
+      res.status(201).json({ message: "Saved all tags", data: tags });
     } else {
-      res.status(404).json({ error: 'Something went wrong in the bulk data' });
+      res.status(404).json({ error: "Something went wrong in the bulk data" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Failed to seed bulk tags data' });
+    res.status(500).json({ error: "Failed to seed bulk tags data" });
   }
-})
+});
 
 // bulk Seeding Agents
 
@@ -453,18 +453,18 @@ async function bulkSeedingAgents(bulkData) {
   }
 }
 
-app.post('/api/bulk-agents', async (req, res) => {
+app.post("/api/bulk-agents", async (req, res) => {
   try {
     const agents = await bulkSeedingAgents(req.body);
     if (agents && agents.length > 0) {
-      res.status(201).json({ message: 'Saved all agents', data: agents });
+      res.status(201).json({ message: "Saved all agents", data: agents });
     } else {
-      res.status(404).json({ error: 'Something went wrong in the bulk data' });
+      res.status(404).json({ error: "Something went wrong in the bulk data" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Failed to seed bulk agent data' });
+    res.status(500).json({ error: "Failed to seed bulk agent data" });
   }
-})
+});
 
 // bulk Seeding Leads
 
@@ -477,19 +477,19 @@ async function bulkSeedingLeads(bulkData) {
   }
 }
 
-app.post('/api/bulk-leads', async (req, res) => {
+app.post("/api/bulk-leads", async (req, res) => {
   try {
     const leads = await bulkSeedingLeads(req.body);
     if (leads) {
-      res.status(201).json({ message: 'Saved all Leads', data: leads });
+      res.status(201).json({ message: "Saved all Leads", data: leads });
     } else {
-      res.status(404).json({ error: 'Something went wrong in the bulk data' });
+      res.status(404).json({ error: "Something went wrong in the bulk data" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Failed to seed bulk leads data' });
-    console.error(error.message)
+    res.status(500).json({ error: "Failed to seed bulk leads data" });
+    console.error(error.message);
   }
-})
+});
 
 // bulk Seeding Comments
 
@@ -502,19 +502,19 @@ async function bulkSeedingComments(bulkData) {
   }
 }
 
-app.post('/api/bulk-comments', async (req, res) => {
+app.post("/api/bulk-comments", async (req, res) => {
   try {
     const comments = await bulkSeedingComments(req.body);
     if (comments && comments.length > 0) {
-      res.status(201).json({ message: 'Saved all Comments', data: comments });
+      res.status(201).json({ message: "Saved all Comments", data: comments });
     } else {
-      res.status(404).json({ error: 'Something went wrong in the bulk data' });
+      res.status(404).json({ error: "Something went wrong in the bulk data" });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Failed to seed bulk Comments data' });
-    console.error(error.message)
+    res.status(500).json({ error: "Failed to seed bulk Comments data" });
+    console.error(error.message);
   }
-})
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {
